@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\mikehow\\source\\repos\\LedgerDemo\\LedgerDemo.csproj": {}
+    "C:\\Users\\mikehow\\source\\repos\\LedgerDemo\\LedgerDemo.csproj": {}
   },
   "projects": {
-    "c:\\Users\\mikehow\\source\\repos\\LedgerDemo\\LedgerDemo.csproj": {
+    "C:\\Users\\mikehow\\source\\repos\\LedgerDemo\\LedgerDemo.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\mikehow\\source\\repos\\LedgerDemo\\LedgerDemo.csproj",
+        "projectUniqueName": "C:\\Users\\mikehow\\source\\repos\\LedgerDemo\\LedgerDemo.csproj",
         "projectName": "LedgerDemo",
-        "projectPath": "c:\\Users\\mikehow\\source\\repos\\LedgerDemo\\LedgerDemo.csproj",
+        "projectPath": "C:\\Users\\mikehow\\source\\repos\\LedgerDemo\\LedgerDemo.csproj",
         "packagesPath": "C:\\Users\\mikehow\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\mikehow\\source\\repos\\LedgerDemo\\obj\\",
+        "outputPath": "C:\\Users\\mikehow\\source\\repos\\LedgerDemo\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\mikehow\\AppData\\Roaming\\NuGet\\NuGet.Config",

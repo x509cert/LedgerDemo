@@ -75,7 +75,8 @@ app.MapGet("/img/{country}.png", async context => {
 });
 
 app.MapGet("/version", async context => {
-    GetSqlVersion();
+    string? v = GetSqlVersion();
+    await context.Response.WriteAsync(v);
 });
 
 bool ValidateRequest(string name, string amount, string whichbet, 
@@ -112,14 +113,12 @@ bool ValidateRequest(string name, string amount, string whichbet,
     return true;
 }
 
-void GetSqlVersion() {
+string? GetSqlVersion() {
     using var con = new SqlConnection(connString);
     con.Open();
 
     using var cmd = new SqlCommand("SELECT @@VERSION", con);
-    string? version = cmd.ExecuteScalar()?.ToString();
-
-    Console.WriteLine(version);
+    return cmd.ExecuteScalar()?.ToString();
 }
 
 app.Run();

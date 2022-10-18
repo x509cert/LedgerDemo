@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "jMxi+WoSzzsOLIOav3FfBuDA8ArWhWW/Rqmiwt9ocmhYIfg9ggVCRT5lxPw0oT0rRClTSs6UNVT0ApSs+PYByQ==",
+  "dgSpecHash": "WNiMzgJeCwMd2aLKANXuCDvzMN1H5hwoM+J1VuiE7JQxZSQQoiy6038nkQW4XIU1bPkOh746k/W9qQdJd19Aiw==",
   "success": true,
-  "projectFilePath": "c:\\Users\\mikehow\\source\\repos\\LedgerDemo\\LedgerDemo.csproj",
+  "projectFilePath": "C:\\Users\\mikehow\\source\\repos\\LedgerDemo\\LedgerDemo.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\mikehow\\.nuget\\packages\\microsoft.netcore.platforms\\3.1.0\\microsoft.netcore.platforms.3.1.0.nupkg.sha512",
     "C:\\Users\\mikehow\\.nuget\\packages\\microsoft.win32.registry\\4.7.0\\microsoft.win32.registry.4.7.0.nupkg.sha512",
