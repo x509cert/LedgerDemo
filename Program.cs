@@ -17,6 +17,8 @@ string htmlIndex = File.ReadAllText("index.html");
 string htmlError = File.ReadAllText("error.html");
 string htmlSuccess = File.ReadAllText("success.html");
 
+const string connString = @"Server=.;Database=WorldCup;Trusted_Connection=True;";
+
 // root
 app.MapGet("/", async context => {
     Console.WriteLine($"Connection from {context.Connection.RemoteIpAddress}");
@@ -26,7 +28,8 @@ app.MapGet("/", async context => {
 });
 
 // place a bet and insert into SQL
-app.MapGet("/placebet", async context => {
+app.MapGet("/placebet", async context =>
+{
 
     string name = context.Request.Query["flname"];
     string amount = context.Request.Query["betamount"];
@@ -34,32 +37,34 @@ app.MapGet("/placebet", async context => {
 
     Console.WriteLine($"Request for bet from {name} for {amount} on {whichbet}");
 
-    string fName="", lName="";
-    string Country1="", Country2="", result="";
+    string fName = "", lName = "";
+    string Country1 = "", Country2 = "", result = "";
     Int32 odds = 0;
 
-    if (!ValidateRequest(name, amount, whichbet, ref fName, ref lName, ref Country1, ref Country2, ref result, ref odds)) {
-        await context.Response.WriteAsync(htmlError);
-        return;   
+    if (ValidateRequest(name, amount, whichbet, ref fName, ref lName, ref Country1, ref Country2, ref result, ref odds))
+    {
+        var cs = connString;
+
+        using var con = new SqlConnection(cs);
+        con.Open();
+
+        var cmd = new SqlCommand("usp_PlaceBet", con);
+        cmd.Parameters.AddWithValue("@MoneylineID", 100);
+        cmd.Parameters.AddWithValue("@FirstName", fName);
+        cmd.Parameters.AddWithValue("@LastName", lName);
+        cmd.Parameters.AddWithValue("@Country", Country1);
+        cmd.Parameters.AddWithValue("@Bet", amount);
+        cmd.Parameters.AddWithValue("@Odds", odds);
+
+        cmd.CommandType = CommandType.StoredProcedure;
+        cmd.ExecuteNonQuery();
+
+        await context.Response.WriteAsync(htmlSuccess);
     }
-
-    var cs = @"Server=.;Database=WorldCup;Trusted_Connection=True;";
-  
-    using var con = new SqlConnection(cs);
-    con.Open();
-
-    var cmd = new SqlCommand("usp_PlaceBet", con);
-    cmd.Parameters.AddWithValue("@MoneylineID", 100);
-    cmd.Parameters.AddWithValue("@FirstName", fName);
-    cmd.Parameters.AddWithValue("@LastName", lName);
-    cmd.Parameters.AddWithValue("@Country", Country1);
-    cmd.Parameters.AddWithValue("@Bet", amount);
-    cmd.Parameters.AddWithValue("@Odds", odds);
-
-    cmd.CommandType = CommandType.StoredProcedure;
-    cmd.ExecuteNonQuery();
-
-    await context.Response.WriteAsync(htmlSuccess);
+    else
+    {
+        await context.Response.WriteAsync(htmlError);
+    }
 });
 
 app.MapGet("/img/{country}.png", async context => {
@@ -67,6 +72,10 @@ app.MapGet("/img/{country}.png", async context => {
     byte[] img = File.ReadAllBytes(Directory.GetCurrentDirectory() + file);
     Console.WriteLine($"Request for {file}");
     //await context.Response.
+});
+
+app.MapGet("/version", async context => {
+    GetSqlVersion();
 });
 
 bool ValidateRequest(string name, string amount, string whichbet, 
@@ -104,13 +113,10 @@ bool ValidateRequest(string name, string amount, string whichbet,
 }
 
 void GetSqlVersion() {
-    var cs = @"Server=.;Database=WorldCup;Trusted_Connection=True;";
-    var stm = "SELECT @@VERSION";
-
-    using var con = new SqlConnection(cs);
+    using var con = new SqlConnection(connString);
     con.Open();
 
-    using var cmd = new SqlCommand(stm, con);
+    using var cmd = new SqlCommand("SELECT @@VERSION", con);
     string? version = cmd.ExecuteScalar()?.ToString();
 
     Console.WriteLine(version);
