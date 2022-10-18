@@ -99,35 +99,38 @@ bool ValidateRequest(string name,
                      ref string Country1,
                      ref string Country2,
                      ref string result,
-                     ref Int32 betAmount) {
+                     ref Int32 betAmount)
+{
 
-    if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(amount) || string.IsNullOrEmpty(whichbet))
-        return false;
-    
-    string [] flname = name.Split(' ', 2);
-    if (flname.Count() !=2)
-        return false;
+    if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(amount) && !string.IsNullOrEmpty(whichbet))
+    {
+        string[] flname = name.Split(' ', 2);
+        if (flname.Count() != 2)
+            return false;
 
-    UInt32 intAmount = 0;
-    if (!UInt32.TryParse(amount, out intAmount))
-        return false;
+        UInt32 intAmount = 0;
+        if (!UInt32.TryParse(amount, out intAmount))
+            return false;
 
-    string [] whichBetItems = whichbet.Split('|', 4);
-    if (whichBetItems.Count() != 4)
-        return false;
-    
-    Int32 odds = 0;
-    if (!Int32.TryParse(whichBetItems[3], out odds))
-        return false;
-    
-    fName = flname[0];
-    lName = flname[1];
-    Country1 = whichBetItems[0];
-    Country2 = whichBetItems[1];
-    result = whichBetItems[2];
-    betAmount = odds;
-    
-    return true;
+        string[] whichBetItems = whichbet.Split('|', 4);
+        if (whichBetItems.Count() != 4)
+            return false;
+
+        Int32 odds = 0;
+        if (!Int32.TryParse(whichBetItems[3], out odds))
+            return false;
+
+        fName = flname[0];
+        lName = flname[1];
+        Country1 = whichBetItems[0];
+        Country2 = whichBetItems[1];
+        result = whichBetItems[2];
+        betAmount = odds;
+
+        return true;
+    }
+
+    return false;
 }
 
 string? GetSqlVersion() {
