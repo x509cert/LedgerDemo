@@ -1,8 +1,8 @@
-using System;
 using System.Data;
 using System.Data.SqlClient;
 
-var builder = WebApplication.CreateBuilder(new WebApplicationOptions {
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
     Args = args,
     ApplicationName = typeof(Program).Assembly.FullName,
     ContentRootPath = Directory.GetCurrentDirectory(),
@@ -39,25 +39,35 @@ app.MapGet("/placebet", async context =>
 
     string fName = "", lName = "";
     string Country1 = "", Country2 = "", result = "";
-    Int32 odds = 0;
+    var odds = 0;
 
-    if (ValidateRequest(name, amount, whichbet, ref fName, ref lName, ref Country1, ref Country2, ref result, ref odds))
+    if (ValidateRequest(name,
+                        amount,
+                        whichbet,
+                        ref fName,
+                        ref lName,
+                        ref Country1,
+                        ref Country2,
+                        ref result,
+                        ref odds))
     {
         var cs = connString;
 
         using var con = new SqlConnection(cs);
         con.Open();
 
-        var cmd = new SqlCommand("usp_PlaceBet", con);
-        cmd.Parameters.AddWithValue("@MoneylineID", 100);
-        cmd.Parameters.AddWithValue("@FirstName", fName);
-        cmd.Parameters.AddWithValue("@LastName", lName);
-        cmd.Parameters.AddWithValue("@Country", Country1);
-        cmd.Parameters.AddWithValue("@Bet", amount);
-        cmd.Parameters.AddWithValue("@Odds", odds);
+        using (var cmd = new SqlCommand("usp_PlaceBet", con))
+        {
+            cmd.Parameters.AddWithValue("@MoneylineID", 100);
+            cmd.Parameters.AddWithValue("@FirstName", fName);
+            cmd.Parameters.AddWithValue("@LastName", lName);
+            cmd.Parameters.AddWithValue("@Country", Country1);
+            cmd.Parameters.AddWithValue("@Bet", amount);
+            cmd.Parameters.AddWithValue("@Odds", odds);
 
-        cmd.CommandType = CommandType.StoredProcedure;
-        cmd.ExecuteNonQuery();
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.ExecuteNonQuery();
+        }
 
         await context.Response.WriteAsync(htmlSuccess);
     }
@@ -67,22 +77,29 @@ app.MapGet("/placebet", async context =>
     }
 });
 
+/*
 app.MapGet("/img/{country}.png", async context => {
     string file = context.Request.Path;
     byte[] img = File.ReadAllBytes(Directory.GetCurrentDirectory() + file);
     Console.WriteLine($"Request for {file}");
     //await context.Response.
 });
+*/
 
 app.MapGet("/version", async context => {
     string? v = GetSqlVersion();
     await context.Response.WriteAsync(v);
 });
 
-bool ValidateRequest(string name, string amount, string whichbet, 
-                    ref string fName, ref string lName, 
-                    ref string Country1, ref string Country2, 
-                    ref string result, ref Int32 betAmount) {
+bool ValidateRequest(string name,
+                     string amount,
+                     string whichbet,
+                     ref string fName,
+                     ref string lName,
+                     ref string Country1,
+                     ref string Country2,
+                     ref string result,
+                     ref Int32 betAmount) {
 
     if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(amount) || string.IsNullOrEmpty(whichbet))
         return false;
