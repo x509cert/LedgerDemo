@@ -1,0 +1,39 @@
+<html>
+    <head>
+        <style>
+           p,h1, label {font-family: "Calibri", "Arial", Gadget, sans-serif; }
+           tr:nth-child(odd) { background-color: #D6EEEE; border: 0px; font-weight: bold }
+           tr, th {vertical-align: middle; font-family: "Calibri", "Arial", Gadget, sans-serif; border: 0px; padding: 15px }
+           td {vertical-align: middle; font-family: "Calibri", "Arial", Gadget, sans-serif; border: 0px; width: 200px; padding: 5px}
+           td:hover, td.selected {background-color: #b9b9b9 }
+
+        </style>
+    </head>
+
+    <script src='http://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.6.1.min.js'></script>
+    <script>
+        $("td").click(function(){
+            $(this).addClass("selected").siblings().removeClass("selected");
+        });
+    </script>
+
+    <body>
+        <h1>
+            Contoso Cup Betting
+        </h1>
+        <p id="betting">
+            <form action="/placebet" name="formMakeBet" method="get">
+                <label for="flname">Your Name:</label><input type="text" id="flname" name="flname"><br>
+                <label for="betamount">Bet Amount:</label><input type="text" id="betamount" name="betamount"> 
+                <p></p>
+                <table border=1>
+                    <!-- <tr>
+                        <th>Home Country</th>
+                        <th>Home Country Odds</th>
+                        <th>Draw Odds</th>
+                        <th>Visiting Country</th>
+                        <th>Visiting Country Odds</th>                        
+                        <th>Game Date</th>
+                    </tr> -->
+
+<!-- Stuff below is added by C# code -->
