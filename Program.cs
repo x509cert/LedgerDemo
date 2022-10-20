@@ -58,7 +58,7 @@ app.MapGet("/", async context => {
             sbHtml.Append(SpanTD);
                 var imgHomeFlag = @"<img src='img/" + g.HomeCountry.Replace(" ", "") + @".png' width=14>&nbsp;";
                 var imgVisitFlag = @"<img src='img/" + g.VisitCountry.Replace(" ", "") + @".png' width=14>&nbsp;";
-                sbHtml.Append(imgHomeFlag + g.HomeCountry + " vs " + imgVisitFlag + g.VisitCountry); // + " on " + g.GameDateTime);
+                sbHtml.Append(imgHomeFlag + g.HomeCountry + "  vs  " + imgVisitFlag + g.VisitCountry); // + " on " + g.GameDateTime);
             sbHtml.Append(EndTD);
         sbHtml.Append(EndTR);
 
