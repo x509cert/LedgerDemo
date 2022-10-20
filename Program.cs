@@ -147,7 +147,8 @@ app.MapGet("/img/{country}.png", async context => {
 
 app.MapGet("/version", async context => {
     string? v = GetSqlVersion();
-    await context.Response.WriteAsync(v);
+    if (!string.IsNullOrEmpty(v))
+        await context.Response.WriteAsync(v);
 });
 
 bool ValidateRequest(string name,
