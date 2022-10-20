@@ -19,9 +19,10 @@ string htmlIndexStart = File.ReadAllText("indexStart.html");
 string htmlError = File.ReadAllText("error.html");
 string htmlSuccess = File.ReadAllText("success.html");
 
+// this code connects to SQL as the user of the web app
 const string connString = @"Server=.;Database=WorldCup;Trusted_Connection=True;";
 
-// root
+// root folder
 app.MapGet("/", async context => {
     Console.WriteLine($"Connection from {context.Connection.RemoteIpAddress}");
     
@@ -32,6 +33,7 @@ app.MapGet("/", async context => {
     using var cmd = new SqlCommand("SELECT * from [dbo].[MoneyLine]", con);
     var rows = cmd.ExecuteReader();
 
+    // create array of games from the moneyline data
     List<Game> games = new List<Game>();
     while(rows.Read()) {
         var game = new Game((int)rows.GetValue(0),
@@ -45,7 +47,7 @@ app.MapGet("/", async context => {
     }
 
     // Build the resulting HTML on the fly!
-    // One TR per game, multiple TDs
+    // One <TR> per game, multiple <TD>s
     var sbHtml = new StringBuilder(htmlIndexStart);
     const string TR=@"<TR>", TD = @"<TD>", SpanTD=@"<TD colspan=3>";
     const string EndTR = @"</TR>", EndTD = @"</TD>";
@@ -63,14 +65,19 @@ app.MapGet("/", async context => {
 
         // The three sets of odds
         sbHtml.Append(TR);
+            // Win
             sbHtml.Append(TD);
                 sbHtml.Append(string.Format(Radio, g.MoneyLineID, g.HomeCountry, "W", g.HomeCountryOdds));
                 sbHtml.Append(g.HomeCountry + " " + g.HomeCountryOdds);
             sbHtml.Append(EndTD);
+            
+            // Draw
             sbHtml.Append(TD);
                 sbHtml.Append(string.Format(Radio, g.MoneyLineID, g.HomeCountry, "D", g.DrawOdds));
                 sbHtml.Append("Draw " + g.DrawOdds);
             sbHtml.Append(EndTD);
+            
+            // Loss
             sbHtml.Append(TD);
                 sbHtml.Append(string.Format(Radio, g.MoneyLineID, g.HomeCountry, "L", g.VisitCountryOdds));
                 sbHtml.Append(g.VisitCountry + " " + g.VisitCountryOdds);
@@ -80,16 +87,14 @@ app.MapGet("/", async context => {
         sbHtml.Append("\n");
     }
 
+    // close off the HTML page
     sbHtml.Append("</table><p></p><input type='submit' value='Place Bet'></form></body></html>");
 
     await context.Response.WriteAsync(sbHtml.ToString());
-    
-    //await context.Response.WriteAsync(htmlIndex);
 });
 
 // place a bet and insert into SQL
-app.MapGet("/placebet", async context =>
-{
+app.MapGet("/placebet", async context => {
     string name = context.Request.Query["flname"];
     string amount = context.Request.Query["betamount"];
     string moneyline = context.Request.Query["bet"];
@@ -102,6 +107,8 @@ app.MapGet("/placebet", async context =>
     var moneylineId = 0;
     var amount2 = 0;
 
+    // this validates the three input args and if there're no errors, returns them in the ref args
+    // moneyline is a string of four values separated by a '|'
     if (ValidateRequest(name,
                         amount,
                         moneyline,
@@ -111,15 +118,13 @@ app.MapGet("/placebet", async context =>
                         ref Country,
                         ref result,
                         ref odds,
-                        ref amount2))
-    {
+                        ref amount2)) {
         var cs = connString;
 
         using var con = new SqlConnection(cs);
         con.Open();
 
-        using (var cmd = new SqlCommand("usp_PlaceBet", con))
-        {
+        using (var cmd = new SqlCommand("usp_PlaceBet", con)) {
             cmd.Parameters.AddWithValue("@MoneylineID", moneylineId);
             cmd.Parameters.AddWithValue("@FirstName", fName);
             cmd.Parameters.AddWithValue("@LastName", lName);
@@ -132,13 +137,12 @@ app.MapGet("/placebet", async context =>
         }
 
         await context.Response.WriteAsync(htmlSuccess);
-    }
-    else
-    {
+    } else {
         await context.Response.WriteAsync(htmlError);
     }
 });
 
+// Get SQL Server version
 app.MapGet("/version", async context => {
     string? v = GetSqlVersion();
     await context.Response.WriteAsync(string.IsNullOrEmpty(v) ? "Unable to get SQL Server version" : v);
@@ -153,8 +157,7 @@ bool ValidateRequest(string name,
                      ref string Country,
                      ref string result,
                      ref int odds,
-                     ref int amount2)
-{
+                     ref int amount2) {
 
     if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(amount) && !string.IsNullOrEmpty(moneyline)) {
         // Get user name
@@ -162,10 +165,13 @@ bool ValidateRequest(string name,
         if (flname.Count() != 2)
             return false;
 
+        // get bet amount
         UInt32 intAmount = 0;
         if (!UInt32.TryParse(amount, out intAmount))
             return false;
 
+        // moneyline is four fields:
+        // FirstName|LastName|Wager|Odds
         const int NUM_FIELDS = 4;
         string[] moneylineItems = moneyline.Split('|', NUM_FIELDS);
         if (moneylineItems.Count() != NUM_FIELDS)
@@ -182,9 +188,11 @@ bool ValidateRequest(string name,
         if (!Int32.TryParse(moneylineItems[0], out moneylineId))
             return false;
 
+        // Home country and Win, Draw or Loss
         Country = moneylineItems[1];
         result = moneylineItems[2];
 
+        // odds
         if (!Int32.TryParse(moneylineItems[3], out odds))
             return false;
 
@@ -194,6 +202,7 @@ bool ValidateRequest(string name,
     return false;
 }
 
+// SQL query to get SQL Server version
 string? GetSqlVersion() {
     using var con = new SqlConnection(connString);
     con.Open();
@@ -202,8 +211,10 @@ string? GetSqlVersion() {
     return cmd.ExecuteScalar()?.ToString();
 }
 
+// Start the web app
 app.Run();
 
+// struct to hold game details
 public struct Game {
     public Game(int MoneyLineID, string HomeCountry, int HomeCountryOdds, int DrawOdds, string VisitCountry, int VisitCountryOdds, DateTime GameDateTime) {
         this.MoneyLineID = MoneyLineID;
