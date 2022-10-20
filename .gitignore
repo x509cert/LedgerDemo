@@ -1,6 +1,6 @@
 *.dll
 *.obj
-/bin/*
-/obj/*
-/properties/*
+bin/
+obj/
+properties/
 
