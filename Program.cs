@@ -2,7 +2,6 @@
 using System.Data;
 using System.Data.SqlClient;
 using System.Text;
-using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions {
     Args = args,
@@ -139,16 +138,6 @@ app.MapGet("/placebet", async context =>
         await context.Response.WriteAsync(htmlError);
     }
 });
-
-/*
-app.MapGet("/img/{country}.png", async context => {
-    string file = context.Request.Path;
-    string dir = Directory.GetCurrentDirectory();
-    byte[] img = File.ReadAllBytes(dir + file);
-    Console.WriteLine($"Request for {dir + file} of filesize {img.Length}");
-    //await context.Response.Wri
-});
-*/
 
 app.MapGet("/version", async context => {
     string? v = GetSqlVersion();
