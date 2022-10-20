@@ -2,9 +2,7 @@
 using System.Data;
 using System.Data.SqlClient;
 using System.Text;
-using System.Text.Json;
-
-
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions {
     Args = args,
@@ -16,6 +14,7 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions {
 var app = builder.Build();
 app.UseRouting();
 app.UseDefaultFiles();
+app.UseStaticFiles();
 
 string htmlIndexStart = File.ReadAllText("indexStart.html");
 string htmlError = File.ReadAllText("error.html");
@@ -53,12 +52,17 @@ app.MapGet("/", async context => {
     const string EndTR = @"</TR>", EndTD = @"</TD>";
     const string Radio = @"<input type='radio' name='bet' value='{0}|{1}|{2}|{3}'>";
     foreach (var g in games) {
+
+        // Country vs Country heading
         sbHtml.Append(TR);
             sbHtml.Append(SpanTD);
-                sbHtml.Append(g.HomeCountry + " vs " + g.VisitCountry); // + " on " + g.GameDateTime);
+                var imgHomeFlag = @"<img src='img/" + g.HomeCountry.Replace(" ", "") + @".png' width=14>&nbsp;";
+                var imgVisitFlag = @"<img src='img/" + g.VisitCountry.Replace(" ", "") + @".png' width=14>&nbsp;";
+                sbHtml.Append(imgHomeFlag + g.HomeCountry + " vs " + imgVisitFlag + g.VisitCountry); // + " on " + g.GameDateTime);
             sbHtml.Append(EndTD);
         sbHtml.Append(EndTR);
 
+        // The three sets of odds
         sbHtml.Append(TR);
             sbHtml.Append(TD);
                 sbHtml.Append(string.Format(Radio, g.MoneyLineID, g.HomeCountry, "W", g.HomeCountryOdds));
@@ -77,7 +81,7 @@ app.MapGet("/", async context => {
         sbHtml.Append("\n");
     }
 
-    sbHtml.Append("</table><p></p><input type='submit'></form></body></html>");
+    sbHtml.Append("</table><p></p><input type='submit' value='Place Bet'></form></body></html>");
 
     await context.Response.WriteAsync(sbHtml.ToString());
     
@@ -139,9 +143,10 @@ app.MapGet("/placebet", async context =>
 /*
 app.MapGet("/img/{country}.png", async context => {
     string file = context.Request.Path;
-    byte[] img = File.ReadAllBytes(Directory.GetCurrentDirectory() + file);
-    Console.WriteLine($"Request for {file}");
-    //await context.Response.
+    string dir = Directory.GetCurrentDirectory();
+    byte[] img = File.ReadAllBytes(dir + file);
+    Console.WriteLine($"Request for {dir + file} of filesize {img.Length}");
+    //await context.Response.Wri
 });
 */
 
