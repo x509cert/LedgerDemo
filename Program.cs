@@ -147,8 +147,7 @@ app.MapGet("/img/{country}.png", async context => {
 
 app.MapGet("/version", async context => {
     string? v = GetSqlVersion();
-    if (!string.IsNullOrEmpty(v))
-        await context.Response.WriteAsync(v);
+    await context.Response.WriteAsync(string.IsNullOrEmpty(v) ? "Unable to get SQL Server version" : v);
 });
 
 bool ValidateRequest(string name,
@@ -181,7 +180,7 @@ bool ValidateRequest(string name,
         if (!Int32.TryParse(amount, out amount2))
             return false;
 
-        // get users name
+        // get user's name
         fName = flname[0];
         lName = flname[1];
 

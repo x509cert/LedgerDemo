@@ -1,0 +1,6 @@
+*.dll
+*.obj
+/bin/*
+/obj/*
+/properties/*
+
