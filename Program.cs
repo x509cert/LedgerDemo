@@ -3,6 +3,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Text;
 using System.Text.Json;
+using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions {
     Args = args,
@@ -143,8 +144,23 @@ app.MapGet("/placebet", async context => {
             using (var jsonDoc = JsonDocument.Parse(digest)) {
                 JsonElement hash = jsonDoc.RootElement.GetProperty("hash");
                 JsonElement txtime = jsonDoc.RootElement.GetProperty("last_transaction_commit_time");
+
+                string sig = SignBlob(digest);
+
+                // pretty print the sig block
+                const int INCREMENT = 64;
+                for (int i = INCREMENT; i<sig.Length; i+= INCREMENT) {
+                    sig = sig.Insert(i,"<br>");
+                }
                 
-                htmlSuccess = htmlSuccess.Replace("%R%", ("<b>Hash:</b> " + hash.ToString().Replace("0x", "") + "<br><b>Timestamp:</b> " + txtime.ToString())); 
+                htmlSuccess = htmlSuccess.Replace(
+                    "%R%", 
+                    ("<b>Hash:</b> " 
+                        + hash.ToString().Replace("0x", "") 
+                        + "<br><b>Timestamp:</b> " 
+                        + txtime.ToString() 
+                        + "<br>" 
+                        + "<b>--BEGIN SIGNATURE--<BR></b>" + sig + "<BR><b>--END SIGNATURE--</b>")); 
             }
         } else {
             htmlSuccess = htmlSuccess.Replace("%R%","Receipt not available right now.");
@@ -229,6 +245,25 @@ string? GetSqlVersion() {
 string? GetLedgerDigest(SqlConnection con) {
     using var cmd = new SqlCommand("sp_generate_database_ledger_digest", con);
     return cmd.ExecuteScalar()?.ToString();
+}
+
+// sign some data, this creates real signatures, 
+// but the keys are ephemeral for demo purposes only
+string SignBlob(string text) {
+    const string CRYPTO_VERSION = "01";
+
+    using SHA256 alg = SHA256.Create(); // in future add cryptoagility
+    byte[] data = Encoding.ASCII.GetBytes(text);
+    byte[] hash = alg.ComputeHash(data);
+
+    // for demo only, we should really load a cert/key from the cert store
+    using (RSA rsa = RSA.Create()) {
+        RSAPKCS1SignatureFormatter rsaForm = new(rsa);
+        rsaForm.SetHashAlgorithm(nameof(SHA256));
+        byte[] sig = rsaForm.CreateSignature(hash);
+        var sigBase64 = Convert.ToBase64String(sig);
+        return CRYPTO_VERSION + "|" + sigBase64;
+    }
 }
 
 // Start the web app
