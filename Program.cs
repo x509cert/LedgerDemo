@@ -2,6 +2,7 @@
 using System.Data;
 using System.Data.SqlClient;
 using System.Text;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions {
     Args = args,
@@ -136,6 +137,19 @@ app.MapGet("/placebet", async context => {
             cmd.ExecuteNonQuery();
         }
 
+        // add the receipt tp the resulting confirmation page
+        string? digest = GetLedgerDigest(con);
+        if (!string.IsNullOrEmpty(digest)) {
+            using (var jsonDoc = JsonDocument.Parse(digest)) {
+                JsonElement hash = jsonDoc.RootElement.GetProperty("hash");
+                JsonElement txtime = jsonDoc.RootElement.GetProperty("last_transaction_commit_time");
+                
+                htmlSuccess = htmlSuccess.Replace("%R%", ("<b>Hash:</b> " + hash.ToString().Replace("0x", "") + "<br><b>Timestamp:</b> " + txtime.ToString())); 
+            }
+        } else {
+            htmlSuccess = htmlSuccess.Replace("%R%","Receipt not available right now.");
+        }
+
         await context.Response.WriteAsync(htmlSuccess);
     } else {
         await context.Response.WriteAsync(htmlError);
@@ -208,6 +222,12 @@ string? GetSqlVersion() {
     con.Open();
 
     using var cmd = new SqlCommand("SELECT @@VERSION", con);
+    return cmd.ExecuteScalar()?.ToString();
+}
+
+// Get the last tx digest
+string? GetLedgerDigest(SqlConnection con) {
+    using var cmd = new SqlCommand("sp_generate_database_ledger_digest", con);
     return cmd.ExecuteScalar()?.ToString();
 }
 
