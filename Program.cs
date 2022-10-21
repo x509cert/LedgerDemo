@@ -149,18 +149,21 @@ app.MapGet("/placebet", async context => {
 
                 // pretty print the sig block
                 const int INCREMENT = 64;
-                for (int i = INCREMENT; i<sig.Length; i+= INCREMENT) {
-                    sig = sig.Insert(i,"<br>");
-                }
-                
-                htmlSuccess = htmlSuccess.Replace(
-                    "%R%", 
-                    ("<b>Hash:</b> " 
+                for (int i = INCREMENT; i<sig.Length; i+= INCREMENT) 
+                    sig = sig.Insert(i,"\n");
+
+                string sigFileContent = 
+                    "Hash: " 
                         + hash.ToString().Replace("0x", "") 
-                        + "<br><b>Timestamp:</b> " 
+                        + "\nTimestamp: " 
                         + txtime.ToString() 
-                        + "<br>" 
-                        + "<b>--BEGIN SIGNATURE--<BR></b>" + sig + "<BR><b>--END SIGNATURE--</b>")); 
+                        + "\n" 
+                        + "--BEGIN SIGNATURE--\n" + sig + "\n--END SIGNATURE--"; 
+
+                string sigFilename = CreateDownloadableSigBlock(sigFileContent);
+                htmlSuccess = htmlSuccess.Replace(
+                    "%F%",
+                    sigFilename);
             }
         } else {
             htmlSuccess = htmlSuccess.Replace("%R%","Receipt not available right now.");
@@ -264,6 +267,17 @@ string SignBlob(string text) {
         var sigBase64 = Convert.ToBase64String(sig);
         return CRYPTO_VERSION + "|" + sigBase64;
     }
+}
+
+// creates a file with a random name
+string CreateDownloadableSigBlock(string sig) {
+    var filename = Guid.NewGuid() + ".sig.txt";
+    using (var fs = File.Create(filename)) {
+        byte[] b = new UTF8Encoding(true).GetBytes(sig);
+        fs.Write(b,0,b.Length);
+    }
+
+    return filename;
 }
 
 // Start the web app

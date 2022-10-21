@@ -1,5 +1,6 @@
 *.dll
 *.obj
+*.sig.txt
 bin/
 obj/
 properties/
