@@ -122,16 +122,13 @@ app.MapGet("/placebet", async context => {
                         ref odds,
                         ref amount2)) {
         await context.Response.WriteAsync(htmlError); 
-    }
-    else
-    {
+    } else {
         var cs = connString;
 
         using var con = new SqlConnection(cs);
         con.Open();
 
-        using (var cmd = new SqlCommand("usp_PlaceBet", con))
-        {
+        using (var cmd = new SqlCommand("usp_PlaceBet", con)) {
             cmd.Parameters.AddWithValue("@MoneylineID", moneylineId);
             cmd.Parameters.AddWithValue("@FirstName", fName);
             cmd.Parameters.AddWithValue("@LastName", lName);
@@ -145,15 +142,12 @@ app.MapGet("/placebet", async context => {
 
         // add the receipt tp the resulting confirmation page
         string? digest = GetLedgerDigest(con);
-        if (!string.IsNullOrEmpty(digest))
-        {
+        if (!string.IsNullOrEmpty(digest)) {
             string sigFilename = CreateDownloadableSigBlock(digest);
             htmlSuccess = htmlSuccess.Replace("%F%", sigFilename);
 
             await context.Response.WriteAsync(htmlSuccess);
-        }
-        else
-        {
+        } else {
             await context.Response.WriteAsync("Unable to download receipt.");
         }
     }
