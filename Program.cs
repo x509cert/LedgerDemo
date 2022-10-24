@@ -250,7 +250,7 @@ string SignBlob(string text) {
 */
 // creates a file with a random name
 string CreateDownloadableSigBlock(string sig) {
-    var filename = Guid.NewGuid() + ".sig.txt";
+    var filename = Guid.NewGuid() + ".json";
     using (var fs = File.Create(filename)) {
         byte[] b = new UTF8Encoding(true).GetBytes(sig);
         fs.Write(b,0,b.Length);

@@ -1,6 +1,7 @@
 *.dll
 *.obj
 *.sig.txt
+*.json
 bin/
 obj/
 properties/
