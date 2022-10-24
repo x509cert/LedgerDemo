@@ -111,7 +111,7 @@ app.MapGet("/placebet", async context => {
 
     // this validates the three input args and if there're no errors, returns them in the ref args
     // moneyline is a string of four values separated by a '|'
-    if (ValidateRequest(name,
+    if (!ValidateRequest(name,
                         amount,
                         moneyline,
                         ref fName,
@@ -121,12 +121,17 @@ app.MapGet("/placebet", async context => {
                         ref result,
                         ref odds,
                         ref amount2)) {
+        await context.Response.WriteAsync(htmlError); 
+    }
+    else
+    {
         var cs = connString;
 
         using var con = new SqlConnection(cs);
         con.Open();
 
-        using (var cmd = new SqlCommand("usp_PlaceBet", con)) {
+        using (var cmd = new SqlCommand("usp_PlaceBet", con))
+        {
             cmd.Parameters.AddWithValue("@MoneylineID", moneylineId);
             cmd.Parameters.AddWithValue("@FirstName", fName);
             cmd.Parameters.AddWithValue("@LastName", lName);
@@ -140,38 +145,17 @@ app.MapGet("/placebet", async context => {
 
         // add the receipt tp the resulting confirmation page
         string? digest = GetLedgerDigest(con);
-        if (!string.IsNullOrEmpty(digest)) {
-            using (var jsonDoc = JsonDocument.Parse(digest)) {
-                JsonElement hash = jsonDoc.RootElement.GetProperty("hash");
-                JsonElement txtime = jsonDoc.RootElement.GetProperty("last_transaction_commit_time");
+        if (!string.IsNullOrEmpty(digest))
+        {
+            string sigFilename = CreateDownloadableSigBlock(digest);
+            htmlSuccess = htmlSuccess.Replace("%F%", sigFilename);
 
-                string sig = SignBlob(digest);
-
-                // pretty print the sig block
-                const int INCREMENT = 64;
-                for (int i = INCREMENT; i<sig.Length; i+= INCREMENT) 
-                    sig = sig.Insert(i,"\n");
-
-                string sigFileContent = 
-                    "Hash: " 
-                        + hash.ToString().Replace("0x", "") 
-                        + "\nTimestamp: " 
-                        + txtime.ToString() 
-                        + "\n" 
-                        + "--BEGIN SIGNATURE--\n" + sig + "\n--END SIGNATURE--"; 
-
-                string sigFilename = CreateDownloadableSigBlock(sigFileContent);
-                htmlSuccess = htmlSuccess.Replace(
-                    "%F%",
-                    sigFilename);
-            }
-        } else {
-            htmlSuccess = htmlSuccess.Replace("%R%","Receipt not available right now.");
+            await context.Response.WriteAsync(htmlSuccess);
         }
-
-        await context.Response.WriteAsync(htmlSuccess);
-    } else {
-        await context.Response.WriteAsync(htmlError);
+        else
+        {
+            await context.Response.WriteAsync("Unable to download receipt.");
+        }
     }
 });
 
@@ -250,6 +234,7 @@ string? GetLedgerDigest(SqlConnection con) {
     return cmd.ExecuteScalar()?.ToString();
 }
 
+/* NOT USED
 // sign some data, this creates real signatures, 
 // but the keys are ephemeral for demo purposes only
 string SignBlob(string text) {
@@ -268,7 +253,7 @@ string SignBlob(string text) {
         return CRYPTO_VERSION + "|" + sigBase64;
     }
 }
-
+*/
 // creates a file with a random name
 string CreateDownloadableSigBlock(string sig) {
     var filename = Guid.NewGuid() + ".sig.txt";
