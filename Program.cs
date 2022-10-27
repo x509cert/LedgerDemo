@@ -90,19 +90,21 @@ app.MapGet("/", async context => {
     }
 
     // close off the HTML page
-    sbHtml.Append("</table><p></p><input type='submit' value='Place Bet'></form></body></html>");
+    sbHtml.Append("</table><p></p><input type='submit' value='Place Bet' style='height:70px; width:200px; font-size:1.5em; color:#FFFFFF; background-color:#808080'></form></body></html>");
+
 
     await context.Response.WriteAsync(sbHtml.ToString());
 });
 
 // place a bet and insert into SQL
+
 app.MapGet("/placebet", async context => {
-    string name = context.Request.Query["flname"];
+    //string name = context.Request.Query["flname"];
     string amount = context.Request.Query["betamount"];
     string moneyline = context.Request.Query["bet"];
-
+    string name = "Pieter Vanhove";
     Console.WriteLine($"Request for bet from {name} for {amount} on {moneyline}");
-
+    
     string fName = "", lName = "";
     string Country = "", result = "";
     var odds = 0;
