@@ -2,8 +2,6 @@
 using System.Data;
 using System.Data.SqlClient;
 using System.Text;
-using System.Text.Json;
-using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions {
     Args = args,
