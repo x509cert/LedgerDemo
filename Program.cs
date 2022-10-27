@@ -226,26 +226,6 @@ string? GetLedgerDigest(SqlConnection con) {
     return cmd.ExecuteScalar()?.ToString();
 }
 
-/* NOT USED
-// sign some data, this creates real signatures, 
-// but the keys are ephemeral for demo purposes only
-string SignBlob(string text) {
-    const string CRYPTO_VERSION = "01";
-
-    using SHA256 alg = SHA256.Create(); // in future add cryptoagility
-    byte[] data = Encoding.ASCII.GetBytes(text);
-    byte[] hash = alg.ComputeHash(data);
-
-    // for demo only, we should really load a cert/key from the cert store
-    using (RSA rsa = RSA.Create()) {
-        RSAPKCS1SignatureFormatter rsaForm = new(rsa);
-        rsaForm.SetHashAlgorithm(nameof(SHA256));
-        byte[] sig = rsaForm.CreateSignature(hash);
-        var sigBase64 = Convert.ToBase64String(sig);
-        return CRYPTO_VERSION + "|" + sigBase64;
-    }
-}
-*/
 // creates a file with a random name
 string CreateDownloadableSigBlock(string sig) {
     var filename = Guid.NewGuid() + ".json";
