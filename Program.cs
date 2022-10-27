@@ -20,7 +20,7 @@ string htmlError = File.ReadAllText("error.html");
 string htmlSuccess = File.ReadAllText("success.html");
 
 // this code connects to SQL as the user of the web app
-const string connString = @"Server=.;Database=WorldCup;Trusted_Connection=True;";
+const string connString = @"Server=./SQl2022;Database=WorldCup;Trusted_Connection=True;";
 
 // root folder
 app.MapGet("/", async context => {
